@@ -2,18 +2,19 @@ from app.core.database import async_session
 from sqlalchemy import select
 from typing import Type, Generic, TypeVar
 from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 T = TypeVar("T", bound=DeclarativeBase)
 
 
 class BaseDAO(Generic[T]):
-    model: Type[T] = None
+    model: Type[T] | None = None
 
     @classmethod
-    async def get_all(cls) -> list[T]:
+    async def get_all(cls, **filters) -> list[T]:
         async with async_session() as session:
-            query = select(cls.model)
+            query = select(cls.model).filter_by(**filters)
             result = await session.execute(query)
             return result.scalars().all()
 
@@ -30,11 +31,5 @@ class BaseDAO(Generic[T]):
         async with async_session() as session:
             session.add(obj)
             await session.commit()
+            await session.refresh(obj)
             return obj
-
-    # @classmethod
-    # async def add(cls, **data) -> T:
-    #     async with async_session() as session:
-    #         query = insert(cls.model).values(**data)
-    #         await session.execute(query)
-    #         await session.commit()

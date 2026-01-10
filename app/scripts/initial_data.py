@@ -1,4 +1,5 @@
 import asyncio
+from sqlalchemy import text
 import random
 
 from sqlalchemy.ext.asyncio import (
@@ -15,12 +16,13 @@ from app.models.models import (
     ExerciseType,
     Difficulty,
 )
+from app.core.security import get_password_hash
 
 # ---------------------------------------------------------
 # Async engine и фабрика сессий
 # ---------------------------------------------------------
 
-DATABASE_URL = settings.DATABASE_URL
+DATABASE_URL = settings.db.DATABASE_URL
 
 engine = create_async_engine(
     DATABASE_URL,
@@ -42,14 +44,27 @@ AsyncSessionLocal = sessionmaker(
 async def seed_data() -> None:
     async with AsyncSessionLocal() as db:
         try:
+            # Автоматическая очистка перед заполнением
+            await db.execute(
+                text(
+                    "TRUNCATE TABLE users, user_progress, workout_sessions "
+                    "RESTART IDENTITY CASCADE;"
+                )
+            )
+
             # 1. Создаём пользователей
             users: list[User] = []
 
+            # Генерируем общий хеш для всех тестовых пользователей,
+            # чтобы не тратить ресурсы процессора на хеширование в цикле
+            test_password = "password123"
+            hashed_pw = get_password_hash(test_password)
+
             for i in range(1, 7):
                 user = User(
-                    username=f"атлет_{i}",
+                    username=f"user_{i}",
                     email=f"user{i}@example.com",
-                    password="hashed_password",
+                    password=hashed_pw,
                 )
                 db.add(user)
                 users.append(user)
