@@ -1,3 +1,4 @@
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.dao.progress_dao import UserProgressDAO
 from app.schemas.user_progress import (
     UserProgressCreateSchema,
@@ -8,17 +9,17 @@ from fastapi import HTTPException, status
 
 
 class UserProgressService:
+    def __init__(self, session: AsyncSession):
+        self.session = session
+        self.dao = UserProgressDAO(session)
 
-    @staticmethod
-    async def get_user_progress(user_id: int) -> list[UserProgress]:
-        return await UserProgressDAO.get_by_user_id(user_id=user_id)
+    async def get_user_progress(self, user_id: int) -> list[UserProgress]:
+        return await self.dao.get_by_user_id(user_id=user_id)
 
-    @staticmethod
     async def create_progress(
-        user_id: int,
-        data: UserProgressCreateSchema,
+        self, user_id: int, data: UserProgressCreateSchema
     ) -> UserProgress:
-        existing = await UserProgressDAO.find_one_or_none(
+        existing = await self.dao.find_one_or_none(
             user_id=user_id,
             exercise_type=data.exercise_type,
         )
@@ -29,22 +30,18 @@ class UserProgressService:
                 detail="Прогресс по этому упражнению уже существует",
             )
 
-        return await UserProgressDAO.create(
-            user_id=user_id,
-            exercise_type=data.exercise_type,
-            difficulty=data.difficulty,
-            current_reps_per_set=data.current_reps_per_set,
+        new_progress = await self.dao.create(
+            user_id=user_id, **data.model_dump()
         )
+        await self.session.commit()
+        return new_progress
 
-    @staticmethod
     async def update_progress(
-        progress: UserProgress,
-        data: UserProgressUpdateSchema,
+        self, progress: UserProgress, data: UserProgressUpdateSchema
     ) -> UserProgress:
         update_data = data.model_dump(exclude_unset=True)
-
         for field, value in update_data.items():
             setattr(progress, field, value)
 
-        # commit через DAO (доработаем позже)
+        await self.session.commit()
         return progress
