@@ -4,9 +4,12 @@ import bcrypt
 from jose import jwt, JWTError
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import Depends, HTTPException, status
+from app.core.database import get_session
 from app.dao.users_dao import UsersDAO
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
+from app.models.models import User
 
 
 _ROUNDS = 12
@@ -14,7 +17,10 @@ _ROUNDS = 12
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme)):
+async def get_current_user(
+        token: str = Depends(oauth2_scheme),
+        session: AsyncSession = Depends(get_session),
+        ) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Не удалось проверить учетные данные",
@@ -32,8 +38,9 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
             raise credentials_exception
     except JWTError:
         raise credentials_exception
-
-    user = await UsersDAO.find_one_or_none(id=int(user_id))
+    
+    dao = UsersDAO(session)
+    user = await dao.find_one_or_none(id=int(user_id))
     if user is None:
         raise credentials_exception
 
