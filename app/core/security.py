@@ -18,9 +18,9 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
 async def get_current_user(
-        token: str = Depends(oauth2_scheme),
-        session: AsyncSession = Depends(get_session),
-        ) -> User:
+    token: str = Depends(oauth2_scheme),
+    session: AsyncSession = Depends(get_session),
+) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Не удалось проверить учетные данные",
@@ -38,9 +38,9 @@ async def get_current_user(
             raise credentials_exception
     except JWTError:
         raise credentials_exception
-    
+
     dao = UsersDAO(session)
-    user = await dao.find_one_or_none(id=int(user_id))
+    user = await dao.get_for_auth(user_id=int(user_id))
     if user is None:
         raise credentials_exception
 

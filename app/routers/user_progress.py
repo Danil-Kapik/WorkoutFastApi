@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_session
+from app.schemas.user_progress import UserProgressReadSchema
 from app.services.user_progress_service import UserProgressService
 from app.core.security import get_current_user
 from app.models.models import User
@@ -12,7 +13,7 @@ async def get_progress_service(session: AsyncSession = Depends(get_session)):
     return UserProgressService(session)
 
 
-@router.get("/")
+@router.get("/", response_model=list[UserProgressReadSchema])
 async def get_user_progress(
     current_user: User = Depends(get_current_user),
     service: UserProgressService = Depends(get_progress_service),

@@ -14,12 +14,12 @@ class UserProgressService:
         self.dao = UserProgressDAO(session)
 
     async def get_user_progress(self, user_id: int) -> list[UserProgress]:
-        return await self.dao.get_by_user_id(user_id=user_id)
+        return await self.dao.list_by_user_id(user_id=user_id)
 
     async def create_progress(
         self, user_id: int, data: UserProgressCreateSchema
     ) -> UserProgress:
-        existing = await self.dao.find_one_or_none(
+        existing = await self.dao.get_by_user_and_exercise(
             user_id=user_id,
             exercise_type=data.exercise_type,
         )

@@ -22,7 +22,7 @@ async def register_user(
     return {"message": "Вы успешно зарегистрированы!"}
 
 
-@router.post("/login")
+@router.post("/login", status_code=status.HTTP_200_OK)
 async def login_user(
     data: UserLoginSchema, service: UserService = Depends(get_user_service)
 ):
