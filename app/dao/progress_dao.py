@@ -1,13 +1,20 @@
-from app.models.models import UserProgress
 from app.dao.base import BaseDAO
-from typing import Sequence
+from app.models.models import UserProgress, ExerciseType
 
 
 class UserProgressDAO(BaseDAO[UserProgress]):
     model = UserProgress
 
-    async def get_by_user_id(self, user_id: int) -> Sequence[UserProgress]:
-        """
-        Возвращает список прогресса для конкретного пользователя.
-        """
-        return await self.get_all(user_id=user_id)
+    async def list_by_user_id(self, user_id: int) -> list[UserProgress]:
+        return await self.list(
+            user_id=user_id, order_by=self.model.updated_at.desc()
+        )
+
+    async def get_by_user_and_exercise(
+        self,
+        user_id: int,
+        exercise_type: ExerciseType,
+    ) -> UserProgress | None:
+        return await self.find_one(
+            user_id=user_id, exercise_type=exercise_type
+        )

@@ -1,8 +1,7 @@
-from typing import Type, Generic, TypeVar, Sequence
-from sqlalchemy import select
+from typing import Type, TypeVar, Generic, Any
+from sqlalchemy import select, exists, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import DeclarativeBase
-
 
 T = TypeVar("T", bound=DeclarativeBase)
 
@@ -13,18 +12,64 @@ class BaseDAO(Generic[T]):
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def get_all(self, **filters) -> Sequence[T]:
-        query = select(self.model).filter_by(**filters)
-        result = await self.session.execute(query)
-        return result.scalars().all()
+    async def list(
+        self,
+        *expressions,
+        order_by=None,
+        limit: int | None = None,
+        offset: int | None = None,
+        **filters
+    ) -> list[T]:
+        stmt = select(self.model).filter(*expressions).filter_by(**filters)
+        if order_by is not None:
+            stmt = stmt.order_by(
+                *(order_by if isinstance(order_by, list) else [order_by])
+            )
+        if limit:
+            stmt = stmt.limit(limit)
+        if offset:
+            stmt = stmt.offset(offset)
 
-    async def find_one_or_none(self, **filters) -> T | None:
-        query = select(self.model).filter_by(**filters)
-        result = await self.session.execute(query)
+        result = await self.session.execute(stmt)
+        return list(result.scalars().all())
+
+    async def find_one(self, *expressions, **filters) -> T | None:
+        stmt = select(self.model).filter(*expressions).filter_by(**filters)
+        result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def create(self, **kwargs) -> T:
-        obj = self.model(**kwargs)
+    async def get_by_id(self, id_: int) -> T | None:
+        return await self.session.get(self.model, id_)
+
+    async def exists(self, *expressions, **filters) -> bool:
+        stmt = select(
+            exists(
+                select(self.model).filter(*expressions).filter_by(**filters)
+            )
+        )
+        result = await self.session.execute(stmt)
+        return bool(result.scalar())
+
+    async def create(self, **data: Any) -> T:
+        obj = self.model(**data)
         self.session.add(obj)
         await self.session.flush()
         return obj
+
+    async def update(
+        self, *expressions, data: dict[str, Any], **filters
+    ) -> T | None:
+        stmt = (
+            update(self.model)
+            .filter(*expressions)
+            .filter_by(**filters)
+            .values(**data)
+            .returning(self.model)
+        )
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def delete(self, *expressions, **filters) -> int:
+        stmt = delete(self.model).filter(*expressions).filter_by(**filters)
+        result = await self.session.execute(stmt)
+        return result.rowcount

@@ -15,7 +15,7 @@ class UserService:
         self.session = session
 
     async def register_user(self, user_data: UserCreateSchema) -> None:
-        existing_user = await self.dao.find_user_by_email_or_username(
+        existing_user = await self.dao.find_by_email_or_username(
             email=user_data.email, username=user_data.username
         )
 
