@@ -46,6 +46,16 @@ class Difficulty(str, enum.Enum):
 
         return list(range(start, end + 1))
 
+    @staticmethod
+    def from_reps(reps: int) -> "Difficulty":
+        """Определяет уровень сложности на основе количества повторений"""
+        if reps <= 5:
+            return Difficulty.BEGINNER
+        elif reps <= 12:
+            return Difficulty.INTERMEDIATE
+        else:
+            return Difficulty.ADVANCED
+
 
 class Base(DeclarativeBase):
     pass
@@ -79,13 +89,13 @@ class User(Base):
         "WorkoutSession",
         back_populates="user",
         cascade="all, delete-orphan",
-        lazy="selectin",
+        lazy="select",
     )
     progress: Mapped[list["UserProgress"]] = relationship(
         "UserProgress",
         back_populates="user",
         cascade="all, delete-orphan",
-        lazy="selectin",
+        lazy="select",
     )
 
     def __repr__(self) -> str:
@@ -120,7 +130,7 @@ class UserProgress(Base):
     user = relationship(
         "User",
         back_populates="progress",
-        lazy="selectin",
+        lazy="select",
     )
 
     __table_args__ = (
@@ -211,7 +221,7 @@ class WorkoutSession(Base):
     user = relationship(
         "User",
         back_populates="sessions",
-        lazy="selectin",
+        lazy="select",
     )
 
     __table_args__ = (

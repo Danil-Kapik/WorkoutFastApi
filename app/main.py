@@ -1,12 +1,14 @@
 import fastapi
 from app.routers.auth import router as users_router
 from app.routers.user_progress import router as user_progress_router
+from app.routers.workout_session import router as workout_session_router
 
 
 app = fastapi.FastAPI()
 
 app.include_router(users_router)
 app.include_router(user_progress_router)
+app.include_router(workout_session_router)
 
 
 @app.get("/")

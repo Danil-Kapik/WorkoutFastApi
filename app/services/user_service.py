@@ -15,16 +15,12 @@ class UserService:
         self.session = session
 
     async def register_user(self, user_data: UserCreateSchema) -> None:
-        existing_user = await self.dao.find_by_email_or_username(
-            email=user_data.email, username=user_data.username
+        existing_user = await self.dao.find_by_username(
+            username=user_data.username
         )
 
         if existing_user:
-            detail = (
-                "Email уже занят"
-                if existing_user.email == user_data.email
-                else "Username занят"
-            )
+            detail = "Email уже занят"
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT, detail=detail
             )
@@ -33,10 +29,9 @@ class UserService:
         user_dict["password"] = get_password_hash(user_dict.pop("password"))
 
         await self.dao.create(**user_dict)
-        await self.session.commit()  # Коммит на уровне сервиса
 
     async def authenticate_user(self, login: str, password: str) -> str:
-        user = await self.dao.find_by_login(login)
+        user = await self.dao.find_by_username(login)
         if not user or not verify_password(password, user.password):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
