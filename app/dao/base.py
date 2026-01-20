@@ -1,7 +1,7 @@
-from typing import Type, TypeVar, Generic, Any
+from typing import Type, TypeVar, Generic, Any, Sequence
 from sqlalchemy import select, exists, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.orm import DeclarativeBase, Load
 
 T = TypeVar("T", bound=DeclarativeBase)
 
@@ -18,9 +18,14 @@ class BaseDAO(Generic[T]):
         order_by=None,
         limit: int | None = None,
         offset: int | None = None,
+        options: Sequence[Load] | None = None,
         **filters
     ) -> list[T]:
         stmt = select(self.model).filter(*expressions).filter_by(**filters)
+
+        if options:
+            stmt = stmt.options(*options)
+
         if order_by is not None:
             stmt = stmt.order_by(
                 *(order_by if isinstance(order_by, list) else [order_by])
@@ -33,8 +38,25 @@ class BaseDAO(Generic[T]):
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
 
-    async def find_one(self, *expressions, **filters) -> T | None:
+    async def find_one(
+        self, *expressions, options: Sequence[Load] | None = None, **filters
+    ) -> T | None:
         stmt = select(self.model).filter(*expressions).filter_by(**filters)
+
+        if options:
+            stmt = stmt.options(*options)
+
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def get_by_id_with_options(
+        self, id_: int, *options: Load
+    ) -> T | None:
+        stmt = select(self.model).where(self.model.id == id_)
+
+        if options:
+            stmt = stmt.options(*options)
+
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
