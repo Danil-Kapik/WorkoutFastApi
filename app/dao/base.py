@@ -1,5 +1,5 @@
 from typing import Type, TypeVar, Generic, Any, Sequence
-from sqlalchemy import select, exists, update, delete
+from sqlalchemy import select, exists, update, delete, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import DeclarativeBase, Load
 
@@ -30,9 +30,9 @@ class BaseDAO(Generic[T]):
             stmt = stmt.order_by(
                 *(order_by if isinstance(order_by, list) else [order_by])
             )
-        if limit:
+        if limit is not None:
             stmt = stmt.limit(limit)
-        if offset:
+        if offset is not None:
             stmt = stmt.offset(offset)
 
         result = await self.session.execute(stmt)
@@ -95,3 +95,13 @@ class BaseDAO(Generic[T]):
         stmt = delete(self.model).filter(*expressions).filter_by(**filters)
         result = await self.session.execute(stmt)
         return result.rowcount
+
+    async def count(self, *expressions, **filters) -> int:
+        stmt = select(func.count(self.model.id))
+        if expressions:
+            stmt = stmt.filter(*expressions)
+        if filters:
+            stmt = stmt.filter_by(**filters)
+
+        result = await self.session.execute(stmt)
+        return result.scalar_one()

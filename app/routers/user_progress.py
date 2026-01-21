@@ -21,3 +21,15 @@ async def get_user_progress(
     service: UserProgressService = Depends(get_progress_service),
 ):
     return await service.get_user_progress(user_id=current_user.id)
+
+
+@router.get("/{exercise_type}", response_model=UserProgressReadSchema | None)
+async def get_progress_for_exercise(
+    exercise_type: str,
+    current_user: User = Depends(get_current_user),
+    service: UserProgressService = Depends(get_progress_service),
+):
+    return await service.get_progress_for_exercise(
+        user_id=current_user.id,
+        exercise_type=exercise_type,
+    )

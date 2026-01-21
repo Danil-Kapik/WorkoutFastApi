@@ -40,7 +40,7 @@ async def get_current_user(
         raise credentials_exception
 
     dao = UsersDAO(session)
-    user = await dao.get_for_auth(user_id=int(user_id))
+    user = await dao.get_by_id(int(user_id))
     if user is None:
         raise credentials_exception
 
@@ -69,7 +69,7 @@ def create_access_token(
 ) -> str:
     """
     Создает подписанный JWT access token.
-    subject — идентификатор пользователя (user_id / email)
+    subject — идентификатор пользователя (user_id / username).
     """
     now = datetime.now(timezone.utc)
 

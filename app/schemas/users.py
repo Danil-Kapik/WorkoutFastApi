@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr
-from app.schemas.base import ORMBaseSchema, TimestampSchema
+from app.schemas.base import BaseSchema, TimestampSchema
 
 
 class UserCreateSchema(BaseModel):
@@ -8,12 +8,13 @@ class UserCreateSchema(BaseModel):
     password: str
 
 
-class UserReadSchema(ORMBaseSchema, TimestampSchema):
+class UserReadSchema(BaseSchema, TimestampSchema):
     id: int
     username: str
     email: str
 
 
-class UserLoginSchema(BaseModel):
-    login: str  # email или username
-    password: str
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    expires_in: int | None = None

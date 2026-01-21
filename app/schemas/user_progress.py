@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
-from app.schemas.base import ORMBaseSchema, TimestampSchema
+from app.schemas.base import BaseSchema, TimestampSchema
 from app.models.models import ExerciseType as ExerciseTypeEnum
 from app.models.models import Difficulty as DifficultyEnum
 
@@ -16,7 +16,7 @@ class UserProgressUpdateSchema(BaseModel):
     difficulty: DifficultyEnum | None = None
 
 
-class UserProgressReadSchema(ORMBaseSchema, TimestampSchema):
+class UserProgressReadSchema(BaseSchema, TimestampSchema):
     id: int
     user_id: int
     exercise_type: ExerciseTypeEnum

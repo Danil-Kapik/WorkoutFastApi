@@ -8,8 +8,8 @@ class WorkoutSessionsDAO(BaseDAO[WorkoutSession]):
     async def list_by_user(
         self,
         user_id: int,
-        limit: int | None = None,
-        offset: int | None = None,
+        limit: int,
+        offset: int,
     ) -> list[WorkoutSession]:
         return await self.list(
             user_id=user_id,

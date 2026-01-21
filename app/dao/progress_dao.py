@@ -7,7 +7,11 @@ class UserProgressDAO(BaseDAO[UserProgress]):
 
     async def list_by_user_id(self, user_id: int) -> list[UserProgress]:
         return await self.list(
-            user_id=user_id, order_by=self.model.updated_at.desc()
+            user_id=user_id,
+            order_by=self.model.updated_at.desc(),
+            # options=[
+            #     selectinload(UserProgress.user).selectinload(User.progress),
+            # ],
         )
 
     async def get_by_user_and_exercise(

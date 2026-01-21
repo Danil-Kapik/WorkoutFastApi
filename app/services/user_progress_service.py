@@ -5,7 +5,6 @@ from app.models.models import ExerciseType, UserProgress
 
 class UserProgressService:
     def __init__(self, session: AsyncSession):
-        self.session = session
         self.dao = UserProgressDAO(session)
 
     async def get_user_progress(self, user_id: int) -> list[UserProgress]:
@@ -17,7 +16,7 @@ class UserProgressService:
         exercise_type: ExerciseType,
     ) -> UserProgress | None:
         """Получить прогресс пользователя по конкретному упражнению"""
-        return await self.progress_dao.get_by_user_and_exercise(
+        return await self.dao.get_by_user_and_exercise(
             user_id=user_id,
             exercise_type=exercise_type,
         )
