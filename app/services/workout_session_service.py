@@ -1,7 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+import math
 from app.dao.workout_session_dao import WorkoutSessionsDAO
-from app.dao.progress_dao import UserProgressDAO
 from app.schemas.workout_session import (
+    PaginatedResponse,
+    WorkoutSessionReadSchema,
     WorkoutSessionUpdateSchema,
 )
 from app.models.models import (
@@ -14,21 +16,34 @@ from app.models.models import (
 
 class WorkoutSessionService:
     def __init__(self, session: AsyncSession):
-        self.session = session
         self.session_dao = WorkoutSessionsDAO(session)
-        self.progress_dao = UserProgressDAO(session)
 
-    async def get_user_sessions(
+    async def get_user_sessions_paginated(
         self,
         user_id: int,
-        limit: int | None = None,
-        offset: int | None = None,
-    ) -> list[WorkoutSession]:
-        """Получить все тренировочные сессии пользователя"""
-        return await self.session_dao.list_by_user(
+        page: int,
+        size: int,
+    ) -> PaginatedResponse[WorkoutSessionReadSchema]:
+        total = await self.session_dao.count(user_id=user_id)
+        pages = math.ceil(total / size) if total else 0
+
+        if page > pages and pages != 0:
+            page = pages
+
+        offset = (page - 1) * size
+        items = await self.session_dao.list_by_user(
             user_id=user_id,
-            limit=limit,
+            limit=size,
             offset=offset,
+        )
+        return PaginatedResponse[WorkoutSessionReadSchema](
+            items=items,
+            total=total,
+            page=page,
+            size=size,
+            pages=pages,
+            has_next=page < pages,
+            has_prev=page > 1,
         )
 
     async def get_sessions_by_exercise(

@@ -12,15 +12,12 @@ from app.core.security import (
 class UserService:
     def __init__(self, session: AsyncSession):
         self.dao = UsersDAO(session)
-        self.session = session
 
     async def register_user(self, user_data: UserCreateSchema) -> None:
-        existing_user = await self.dao.find_by_username(
-            username=user_data.username
-        )
+        existing_user = await self.dao.find_by_login(login=user_data.username)
 
         if existing_user:
-            detail = "Email уже занят"
+            detail = "username уже занят"
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT, detail=detail
             )
@@ -31,7 +28,7 @@ class UserService:
         await self.dao.create(**user_dict)
 
     async def authenticate_user(self, login: str, password: str) -> str:
-        user = await self.dao.find_by_username(login)
+        user = await self.dao.find_by_login(login)
         if not user or not verify_password(password, user.password):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

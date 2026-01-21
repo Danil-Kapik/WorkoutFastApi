@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
+
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_session
@@ -7,6 +8,7 @@ from app.models.models import User
 from app.schemas.workout_session import (
     WorkoutSessionStartSchema,
     WorkoutSessionReadSchema,
+    PaginatedResponse,
 )
 from app.schemas.user_progress import UserProgressReadSchema
 from app.services.workout_session_service import WorkoutSessionService
@@ -62,3 +64,20 @@ async def create_progress_and_session(
             status_code=status.HTTP_409_CONFLICT,
             detail="Прогресс для данного упражнения уже существует.",
         ) from exc
+
+
+@router.get(
+    "/",
+    response_model=PaginatedResponse[WorkoutSessionReadSchema],
+)
+async def get_sessions(
+    current_user: User = Depends(get_current_user),
+    page: int = Query(1, ge=1, description="Номер страницы"),
+    size: int = Query(10, ge=1, le=100, description="Размер страницы"),
+    service: WorkoutSessionService = Depends(get_workout_session_service),
+) -> PaginatedResponse[WorkoutSessionReadSchema]:
+    return await service.get_user_sessions_paginated(
+        user_id=current_user.id,
+        page=page,
+        size=size,
+    )
