@@ -22,11 +22,15 @@ class WorkoutSessionsDAO(BaseDAO[WorkoutSession]):
         self,
         user_id: int,
         exercise_type: ExerciseType,
+        limit: int,
+        offset: int,
     ) -> list[WorkoutSession]:
         return await self.list(
             user_id=user_id,
             exercise_type=exercise_type,
             order_by=self.model.created_at.desc(),
+            limit=limit,
+            offset=offset,
         )
 
     async def get_last_session(
@@ -37,11 +41,9 @@ class WorkoutSessionsDAO(BaseDAO[WorkoutSession]):
         filters = {"user_id": user_id}
         if exercise_type:
             filters["exercise_type"] = exercise_type
-
-        res = await self.list(
-            **filters, order_by=self.model.created_at.desc(), limit=1
+        return await self.find_one(
+            **filters, order_by=self.model.created_at.desc()
         )
-        return res[0] if res else None
 
     async def create_session(self, **data) -> WorkoutSession:
         return await self.create(**data)

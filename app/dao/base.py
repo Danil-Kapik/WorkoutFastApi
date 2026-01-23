@@ -39,13 +39,22 @@ class BaseDAO(Generic[T]):
         return list(result.scalars().all())
 
     async def find_one(
-        self, *expressions, options: Sequence[Load] | None = None, **filters
+        self,
+        *expressions,
+        options: Sequence[Load] | None = None,
+        order_by=None,
+        **filters
     ) -> T | None:
         stmt = select(self.model).filter(*expressions).filter_by(**filters)
 
-        if options:
+        if options is not None:
             stmt = stmt.options(*options)
 
+        if order_by is not None:
+            stmt = stmt.order_by(
+                *(order_by if isinstance(order_by, list) else [order_by])
+            )
+        stmt = stmt.limit(1)
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
@@ -74,13 +83,16 @@ class BaseDAO(Generic[T]):
 
     async def create(self, **data: Any) -> T:
         obj = self.model(**data)
+        return await self.save(obj)
+
+    async def save(self, obj: T) -> T:
         self.session.add(obj)
         await self.session.flush()
         return obj
 
     async def update(
         self, *expressions, data: dict[str, Any], **filters
-    ) -> T | None:
+    ) -> list[T]:
         stmt = (
             update(self.model)
             .filter(*expressions)
@@ -89,7 +101,7 @@ class BaseDAO(Generic[T]):
             .returning(self.model)
         )
         result = await self.session.execute(stmt)
-        return result.scalar_one_or_none()
+        return result.scalars().all()
 
     async def delete(self, *expressions, **filters) -> int:
         stmt = delete(self.model).filter(*expressions).filter_by(**filters)
