@@ -45,5 +45,5 @@ class WorkoutSessionUpdateSchema(BaseModel):
 class ProgressAndSessionResponse(BaseModel):
     """Ответ с созданным прогрессом и сессией"""
 
-    progress: UserProgressReadSchema
+    progress: UserProgressReadSchema | None
     session: WorkoutSessionReadSchema
