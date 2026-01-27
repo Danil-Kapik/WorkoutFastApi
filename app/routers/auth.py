@@ -20,6 +20,7 @@ async def register_user(
     user_data: UserCreateSchema,
     service: UserService = Depends(get_user_service),
 ):
+    """Регистрация нового пользователя."""
     await service.register_user(user_data)
     return {"message": "Вы успешно зарегистрированы!"}
 
@@ -29,6 +30,7 @@ async def login_user(
     form_data: OAuth2PasswordRequestForm = Depends(),
     service: UserService = Depends(get_user_service),
 ):
+    """Аутентификация пользователя и выдача токена доступа."""
     access_token = await service.authenticate_user(
         form_data.username,
         form_data.password,
@@ -41,4 +43,5 @@ async def login_user(
 
 @router.get("/me")
 async def read_users_me(current_user=Depends(get_current_user)):
+    """Получить информацию о текущем пользователе."""
     return current_user

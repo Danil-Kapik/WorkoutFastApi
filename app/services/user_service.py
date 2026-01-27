@@ -11,9 +11,11 @@ from app.core.security import (
 
 class UserService:
     def __init__(self, session: AsyncSession):
+        self.session = session
         self.dao = UsersDAO(session)
 
     async def register_user(self, user_data: UserCreateSchema) -> None:
+        """Зарегистрировать нового пользователя с проверкой уникальности."""
         existing_user = await self.dao.find_by_login(login=user_data.username)
 
         if existing_user:
@@ -26,8 +28,10 @@ class UserService:
         user_dict["password"] = get_password_hash(user_dict.pop("password"))
 
         await self.dao.create(**user_dict)
+        await self.session.commit()
 
     async def authenticate_user(self, login: str, password: str) -> str:
+        """Аутентифицировать пользователя и вернуть JWT токен."""
         user = await self.dao.find_by_login(login)
         if not user or not verify_password(password, user.password):
             raise HTTPException(

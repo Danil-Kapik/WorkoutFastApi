@@ -12,6 +12,7 @@ class UserProgressService:
     async def get_user_progress(
         self, user_id: int
     ) -> list[UserProgressReadSchema]:
+        """Получить список прогресса пользователя."""
         progress = await self.dao.list_by_user_id(user_id=user_id)
         return [
             UserProgressReadSchema.model_validate(item) for item in progress
@@ -22,6 +23,7 @@ class UserProgressService:
         user_id: int,
         exercise_type: ExerciseType,
     ) -> UserProgressReadSchema | None:
+        """Получить прогресс для конкретного упражнения."""
         progress = await self.dao.get_by_user_and_exercise(
             user_id=user_id,
             exercise_type=exercise_type,
@@ -36,6 +38,7 @@ class UserProgressService:
         exercise_type: ExerciseType,
         reps: int,
     ) -> UserProgress:
+        """Создать новый прогресс с автоматическим определением уровня."""
         difficulty = Difficulty.from_reps(reps)
         progress = await self.dao.create(
             user_id=user_id,

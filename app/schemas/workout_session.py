@@ -1,9 +1,8 @@
 from typing import Generic, TypeVar, List
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from app.schemas.base import BaseSchema, TimestampSchema
 from app.models.models import ExerciseType as ExerciseTypeEnum
 from app.models.models import Difficulty as DifficultyEnum
-from app.schemas.user_progress import UserProgressReadSchema
 
 
 T = TypeVar("T")
@@ -30,19 +29,9 @@ class WorkoutSessionReadSchema(BaseSchema, TimestampSchema):
 
 
 class WorkoutSessionStartSchema(BaseModel):
-    """Схема для создания первой тренировочной сессии с прогрессом.
-    Сложность вычисляется автоматически на основе количества повторений."""
-
     exercise_type: ExerciseTypeEnum
 
 
 class WorkoutSessionUpdateSchema(BaseModel):
     completed: bool | None = None
-    notes: str | None = None
-
-
-class ProgressAndSessionResponse(BaseModel):
-    """Ответ с созданным прогрессом и сессией"""
-
-    progress: UserProgressReadSchema | None
-    session: WorkoutSessionReadSchema
+    notes: str | None = Field(None, max_length=500)

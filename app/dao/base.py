@@ -22,6 +22,7 @@ class BaseDAO(Generic[T]):
         options: Sequence[Load] | None = None,
         **filters
     ) -> list[T]:
+        """Получить коллекцию элементов с фильтрацией, сортировкой и пагинацией."""
         stmt = select(self.model).filter(*expressions).filter_by(**filters)
 
         if options:
@@ -46,6 +47,7 @@ class BaseDAO(Generic[T]):
         order_by=None,
         **filters
     ) -> T | None:
+        """Получить один элемент по фильтрам."""
         stmt = select(self.model).filter(*expressions).filter_by(**filters)
 
         if options is not None:
@@ -62,6 +64,7 @@ class BaseDAO(Generic[T]):
     async def get_by_id_with_options(
         self, id_: int, *options: Load
     ) -> T | None:
+        """Получить элемент по ID с опциями загрузки."""
         stmt = select(self.model).where(self.model.id == id_)
 
         if options:
@@ -71,9 +74,11 @@ class BaseDAO(Generic[T]):
         return result.scalar_one_or_none()
 
     async def get_by_id(self, id_: int) -> T | None:
+        """Получить элемент по ID."""
         return await self.session.get(self.model, id_)
 
     async def exists(self, *expressions, **filters) -> bool:
+        """Проверить наличие элемента в базе."""
         stmt = select(
             exists(
                 select(self.model).filter(*expressions).filter_by(**filters)
@@ -83,10 +88,12 @@ class BaseDAO(Generic[T]):
         return bool(result.scalar())
 
     async def create(self, **data: Any) -> T:
+        """Создать новый элемент и сохранить в базе."""
         obj = self.model(**data)
         return await self.save(obj)
 
     async def save(self, obj: T) -> T:
+        """Сохранить элемент в базе в рамках трансакции."""
         self.session.add(obj)
         await self.session.flush()
         return obj
@@ -94,6 +101,7 @@ class BaseDAO(Generic[T]):
     async def update(
         self, *expressions, data: dict[str, Any], **filters
     ) -> List[T]:
+        """Обновить элементы по фильтрам и вернуть их обновленные версии."""
         stmt = (
             update(self.model)
             .filter(*expressions)
@@ -105,11 +113,13 @@ class BaseDAO(Generic[T]):
         return result.scalars().all()
 
     async def delete(self, *expressions, **filters) -> int:
+        """Удалить элементы по фильтрам."""
         stmt = delete(self.model).filter(*expressions).filter_by(**filters)
         result = await self.session.execute(stmt)
         return result.rowcount
 
     async def count(self, *expressions, **filters) -> int:
+        """Получить количество элементов по фильтрам."""
         stmt = select(func.count(self.model.id))
         if expressions:
             stmt = stmt.filter(*expressions)

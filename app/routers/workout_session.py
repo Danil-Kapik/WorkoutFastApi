@@ -32,6 +32,7 @@ async def start_workout_session(
     current_user: User = Depends(get_current_user),
     service: WorkoutSessionService = Depends(get_workout_session_service),
 ) -> WorkoutSessionReadSchema:
+    """Начать новую сессию тренировки."""
     session = await service.start_session(
         user_id=current_user.id,
         exercise_type=data.exercise_type,
@@ -49,6 +50,7 @@ async def finish_workout_session(
     current_user: User = Depends(get_current_user),
     service: WorkoutSessionService = Depends(get_workout_session_service),
 ) -> WorkoutSessionReadSchema:
+    """Завершить сессию тренировки и обновить прогресс."""
     session = await service.finish_session(
         session_id=session_id,
         user_id=current_user.id,
@@ -68,6 +70,7 @@ async def get_sessions(
     size: int = Query(10, ge=1, le=100, description="Размер страницы"),
     service: WorkoutSessionService = Depends(get_workout_session_service),
 ) -> PaginatedResponse[WorkoutSessionReadSchema]:
+    """Получить все сессии тренировок пользователя с пагинацией."""
     data_dict = await service.get_user_sessions_paginated(
         user_id=current_user.id,
         page=page,
@@ -88,6 +91,7 @@ async def get_sessions_by_exercise(
     current_user: User = Depends(get_current_user),
     service: WorkoutSessionService = Depends(get_workout_session_service),
 ) -> PaginatedResponse[WorkoutSessionReadSchema]:
+    """Получить сессии по конкретному упражнению с пагинацией."""
     dict_data = await service.get_sessions_by_exercise_paginated(
         user_id=current_user.id,
         exercise_type=exercise_type,

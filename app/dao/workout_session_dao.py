@@ -12,6 +12,7 @@ class WorkoutSessionsDAO(BaseDAO[WorkoutSession]):
         limit: int,
         offset: int,
     ) -> list[WorkoutSession]:
+        """Получить сессии пользователя в хронологическом порядке."""
         return await self.list(
             user_id=user_id,
             order_by=self.model.created_at.desc(),
@@ -26,6 +27,7 @@ class WorkoutSessionsDAO(BaseDAO[WorkoutSession]):
         limit: int,
         offset: int,
     ) -> list[WorkoutSession]:
+        """Получить сессии по определенному упражнению."""
         return await self.list(
             user_id=user_id,
             exercise_type=exercise_type,
@@ -39,6 +41,7 @@ class WorkoutSessionsDAO(BaseDAO[WorkoutSession]):
         user_id: int,
         exercise_type: ExerciseType | None = None,
     ) -> WorkoutSession | None:
+        """Получить последнюю сессию тренировки."""
         filters = {"user_id": user_id}
         if exercise_type:
             filters["exercise_type"] = exercise_type
@@ -51,6 +54,7 @@ class WorkoutSessionsDAO(BaseDAO[WorkoutSession]):
         session_id: int,
         user_id: int,
     ) -> WorkoutSession | None:
+        """Получить сессию по ID и ID пользователя."""
         stmt = select(self.model).where(
             self.model.id == session_id,
             self.model.user_id == user_id,
@@ -59,4 +63,5 @@ class WorkoutSessionsDAO(BaseDAO[WorkoutSession]):
         return result.scalar_one_or_none()
 
     async def create_session(self, **data) -> WorkoutSession:
+        """Создать новую сессию тренировки."""
         return await self.create(**data)

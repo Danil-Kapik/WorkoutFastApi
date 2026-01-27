@@ -21,6 +21,7 @@ async def get_user_progress(
     current_user: User = Depends(get_current_user),
     service: UserProgressService = Depends(get_progress_service),
 ):
+    """Получить весь прогресс пользователя по упражнениям."""
     return await service.get_user_progress(user_id=current_user.id)
 
 
@@ -30,6 +31,7 @@ async def get_progress_for_exercise(
     current_user: User = Depends(get_current_user),
     service: UserProgressService = Depends(get_progress_service),
 ) -> UserProgressReadSchema | None:
+    """Получить прогресс пользователя для конкретного упражнения."""
     session = await service.get_progress_for_exercise(
         user_id=current_user.id,
         exercise_type=exercise_type,
@@ -45,6 +47,7 @@ async def create_progress(
     current_user: User = Depends(get_current_user),
     service: UserProgressService = Depends(get_progress_service),
 ):
+    """Создать новый прогресс для упражнения."""
     progress = await service.create_progress(
         user_id=current_user.id,
         exercise_type=data.exercise_type,

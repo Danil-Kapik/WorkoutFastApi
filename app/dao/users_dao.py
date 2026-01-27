@@ -8,6 +8,7 @@ class UsersDAO(BaseDAO[User]):
     model = User
 
     async def find_by_login(self, login: str) -> User | None:
+        """Найти пользователя по логину или email."""
         return await self.find_one(
             or_(User.email == login, User.username == login)
         )
