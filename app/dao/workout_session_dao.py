@@ -1,3 +1,4 @@
+from sqlalchemy import select
 from app.dao.base import BaseDAO
 from app.models.models import ExerciseType, WorkoutSession
 
@@ -44,6 +45,18 @@ class WorkoutSessionsDAO(BaseDAO[WorkoutSession]):
         return await self.find_one(
             **filters, order_by=self.model.created_at.desc()
         )
+
+    async def get_by_id_and_user(
+        self,
+        session_id: int,
+        user_id: int,
+    ) -> WorkoutSession | None:
+        stmt = select(self.model).where(
+            self.model.id == session_id,
+            self.model.user_id == user_id,
+        )
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()
 
     async def create_session(self, **data) -> WorkoutSession:
         return await self.create(**data)

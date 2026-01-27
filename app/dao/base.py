@@ -2,6 +2,7 @@ from typing import Type, TypeVar, Generic, Any, Sequence
 from sqlalchemy import select, exists, update, delete, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import DeclarativeBase, Load
+from typing import List
 
 T = TypeVar("T", bound=DeclarativeBase)
 
@@ -92,7 +93,7 @@ class BaseDAO(Generic[T]):
 
     async def update(
         self, *expressions, data: dict[str, Any], **filters
-    ) -> list[T]:
+    ) -> List[T]:
         stmt = (
             update(self.model)
             .filter(*expressions)
