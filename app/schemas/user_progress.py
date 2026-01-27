@@ -8,7 +8,7 @@ from app.models.models import Difficulty as DifficultyEnum
 class UserProgressCreateSchema(BaseModel):
     exercise_type: ExerciseTypeEnum
     difficulty: DifficultyEnum
-    current_reps_per_set: int = 1
+    current_reps_per_set: int
 
 
 class UserProgressUpdateSchema(BaseModel):

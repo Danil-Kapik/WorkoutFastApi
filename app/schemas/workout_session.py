@@ -34,7 +34,6 @@ class WorkoutSessionStartSchema(BaseModel):
     Сложность вычисляется автоматически на основе количества повторений."""
 
     exercise_type: ExerciseTypeEnum
-    reps: int
 
 
 class WorkoutSessionUpdateSchema(BaseModel):

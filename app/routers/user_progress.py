@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_session
 from app.schemas.user_progress import (
+    UserProgressCreateSchema,
     UserProgressReadSchema,
 )
 from app.services.user_progress_service import UserProgressService
@@ -36,3 +37,17 @@ async def get_progress_for_exercise(
     if session:
         return UserProgressReadSchema.model_validate(session)
     return None
+
+
+@router.post("/", response_model=UserProgressReadSchema)
+async def create_progress(
+    data: UserProgressCreateSchema,
+    current_user: User = Depends(get_current_user),
+    service: UserProgressService = Depends(get_progress_service),
+):
+    progress = await service.create_progress(
+        user_id=current_user.id,
+        exercise_type=data.exercise_type,
+        reps=data.current_reps_per_set,
+    )
+    return UserProgressReadSchema.model_validate(progress)
