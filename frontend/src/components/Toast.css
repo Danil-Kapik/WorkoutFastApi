@@ -1,0 +1,23 @@
+.toast {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(17, 24, 39, 0.95);
+    color: white;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    box-shadow: 0 6px 18px rgba(2, 6, 23, 0.4);
+    z-index: 9999;
+    font-weight: 600;
+    max-width: 320px;
+}
+
+.toast.info {
+    background: #0369a1;
+    /* blue */
+}
+
+.toast.error {
+    background: #b91c1c;
+    /* red */
+}
