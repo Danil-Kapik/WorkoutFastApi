@@ -6,11 +6,20 @@ export const progressApi = {
         return apiCall('/progress')
     },
 
-    getByExercise: async (exerciseType: string): Promise<ProgressResponse[]> => {
-        return apiCall(`/progress/by-exercise?exercise_type=${encodeURIComponent(exerciseType)}`)
+    // Backend returns a single progress record or null when not found
+    getByExercise: async (exerciseType: string): Promise<ProgressResponse | null> => {
+        try {
+            return await apiCall(
+                `/progress/by-exercise?exercise_type=${encodeURIComponent(exerciseType)}`
+            )
+        } catch (err) {
+            // If not found or any error, return null to indicate absence
+            return null
+        }
     },
 
-    create: async (data: Omit<UserProgress, 'id' | 'createdAt' | 'updatedAt'>): Promise<ProgressResponse> => {
+    // Accept payload in backend shape
+    create: async (data: { exercise_type: string; current_reps_per_set: number }): Promise<ProgressResponse> => {
         return apiCall('/progress', {
             method: 'POST',
             body: JSON.stringify(data),

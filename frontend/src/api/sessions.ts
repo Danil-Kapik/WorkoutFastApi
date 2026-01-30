@@ -9,10 +9,13 @@ export const sessionsApi = {
         })
     },
 
-    finish: async (sessionId: number, reps: number): Promise<SessionResponse> => {
+    finish: async (
+        sessionId: number,
+        data: { completed: boolean; notes?: string }
+    ): Promise<SessionResponse> => {
         return apiCall(`/sessions/${sessionId}/finish`, {
             method: 'PATCH',
-            body: JSON.stringify({ reps }),
+            body: JSON.stringify(data),
         })
     },
 
