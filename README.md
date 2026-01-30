@@ -247,13 +247,7 @@ python -m uvicorn app.main:app --reload
    - Может посмотреть историю сессий по упражнениям
    - Видит текущий уровень и количество повторений для каждого упражнения
 
-## Разработка и тестирование
-
-### Запуск тестов
-
-```bash
-pytest tests/
-```
+## Разработка
 
 ### Создание новой миграции
 
@@ -300,9 +294,6 @@ python -m uvicorn app.main:app --reload
 
 # Запуск в production режиме
 gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app
-
-# Интерактивное тестирование API
-python app/scripts/curl_test.py
 
 # Проверка синтаксиса кода
 python -m pylance app/

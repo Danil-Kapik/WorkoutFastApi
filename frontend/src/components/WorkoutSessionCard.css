@@ -1,0 +1,119 @@
+.workout-session-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: box-shadow 0.2s ease;
+}
+
+.workout-session-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 2px solid #f5f5f5;
+    padding-bottom: 12px;
+}
+
+.exercise-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #222;
+    text-transform: capitalize;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.status-completed {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.status-not-completed {
+    background-color: #fff3e0;
+    color: #e65100;
+}
+
+.card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #666;
+    flex-shrink: 0;
+}
+
+.value {
+    font-size: 14px;
+    color: #222;
+    text-align: right;
+    flex: 1;
+}
+
+.notes-row .value {
+    text-align: left;
+    word-wrap: break-word;
+}
+
+.date-row {
+    border-top: 1px solid #f0f0f0;
+    padding-top: 8px;
+    margin-top: 4px;
+}
+
+.date-row .value {
+    font-size: 12px;
+    color: #999;
+}
+
+@media (max-width: 600px) {
+    .workout-session-card {
+        padding: 12px;
+        gap: 10px;
+    }
+
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .exercise-title {
+        font-size: 16px;
+    }
+
+    .info-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .value {
+        text-align: left;
+    }
+}

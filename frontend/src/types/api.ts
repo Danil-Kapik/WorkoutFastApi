@@ -51,10 +51,10 @@ export interface SessionResponse {
     id: number
     user_id: number
     exercise_type: string
-    started_at: string
-    finished_at?: string
-    reps?: number
-    difficulty: number
+    difficulty: string
+    reps_per_set_at_start: number
+    completed: boolean
+    notes: string | null
     created_at: string
     updated_at: string
 }
@@ -64,4 +64,7 @@ export interface SessionListResponse {
     total: number
     page: number
     size: number
+    pages: number
+    has_next: boolean
+    has_prev: boolean
 }

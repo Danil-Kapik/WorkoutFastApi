@@ -3,50 +3,45 @@ import { sessionsApi } from '../api/sessions'
 import { SessionResponse } from '../types/api'
 import './Sessions.css'
 
-const EXERCISE_TYPES = ['подтягивания', 'отжимания', 'приседания', 'планка']
+const EXERCISE_TYPES = ['подтягивания', 'отжимания', 'тяга', 'присед']
 
 export function Sessions() {
     const [sessions, setSessions] = useState<SessionResponse[]>([])
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
-    const [page, setPage] = useState(1)
-    const [total, setTotal] = useState(0)
-    const [selectedExercise, setSelectedExercise] = useState<string>('')
     const [activeSessionId, setActiveSessionId] = useState<number | null>(null)
     const [repsInput, setRepsInput] = useState('')
 
-    const PAGE_SIZE = 10
-
     useEffect(() => {
-        const loadSessions = async () => {
-            setLoading(true)
-            setError('')
+        const loadLatestSession = async () => {
+            // Fetch latest sessions to show current status if needed
             try {
-                let data
-                if (selectedExercise) {
-                    data = await sessionsApi.getByExercise(selectedExercise, page, PAGE_SIZE)
-                } else {
-                    data = await sessionsApi.getList(page, PAGE_SIZE)
+                const data = await sessionsApi.getList(1, 1)
+                if (data.items.length > 0) {
+                    const latestSession = data.items[0]
+                    if (!latestSession.completed) {
+                        setActiveSessionId(latestSession.id)
+                    }
                 }
-                setSessions(data.items)
-                setTotal(data.total)
             } catch (err) {
-                setError(err instanceof Error ? err.message : 'Ошибка загрузки тренировок')
-            } finally {
-                setLoading(false)
+                console.error('Ошибка загрузки последней тренировки:', err)
             }
         }
 
-        loadSessions()
-    }, [page, selectedExercise])
+        loadLatestSession()
+    }, [])
 
     const handleStartSession = async (exerciseType: string) => {
         try {
+            setError('')
+            setLoading(true)
             const session = await sessionsApi.start(exerciseType)
             setActiveSessionId(session.id)
             setSessions([session, ...sessions])
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Ошибка начала тренировки')
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -57,16 +52,18 @@ export function Sessions() {
         }
 
         try {
+            setLoading(true)
             const updatedSession = await sessionsApi.finish(sessionId, Number(repsInput))
             setSessions(sessions.map((s) => (s.id === sessionId ? updatedSession : s)))
             setActiveSessionId(null)
             setRepsInput('')
+            setError('')
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Ошибка завершения тренировки')
+        } finally {
+            setLoading(false)
         }
     }
-
-    const totalPages = Math.ceil(total / PAGE_SIZE)
 
     return (
         <div className="page-container">
@@ -90,83 +87,31 @@ export function Sessions() {
                 </div>
             </section>
 
-            <section className="sessions-filter">
-                <h2>История тренировок</h2>
-                <div className="filter-group">
-                    <label htmlFor="exercise-select">Фильтр по упражнению:</label>
-                    <select
-                        id="exercise-select"
-                        value={selectedExercise}
-                        onChange={(e) => {
-                            setSelectedExercise(e.target.value)
-                            setPage(1)
-                        }}
-                    >
-                        <option value="">Все упражнения</option>
-                        {EXERCISE_TYPES.map((type) => (
-                            <option key={type} value={type}>
-                                {type}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-            </section>
-
-            {loading && !sessions.length ? (
-                <div className="page-loading">Загрузка тренировок...</div>
-            ) : sessions.length === 0 ? (
-                <div className="empty-state">
-                    <p>Тренировок не найдено</p>
-                </div>
-            ) : (
-                <>
-                    <div className="sessions-list">
-                        {sessions.map((session) => (
-                            <div key={session.id} className="session-card">
-                                <div className="session-header">
-                                    <h3>{session.exercise_type}</h3>
-                                    <span className="session-status">
-                                        {session.finished_at ? 'Завершена' : 'В процессе'}
-                                    </span>
-                                </div>
-
-                                <div className="session-details">
-                                    <div className="detail">
-                                        <span className="label">Начало:</span>
-                                        <span className="value">
-                                            {new Date(session.started_at).toLocaleString('ru-RU')}
-                                        </span>
+            {activeSessionId !== null && (
+                <section className="active-session">
+                    <h2>Текущая тренировка</h2>
+                    {sessions.map((session) => {
+                        if (session.id === activeSessionId && !session.completed) {
+                            return (
+                                <div key={session.id} className="session-card">
+                                    <div className="session-header">
+                                        <h3>{session.exercise_type}</h3>
+                                        <span className="session-status">В процессе</span>
                                     </div>
-                                    {session.finished_at && (
+
+                                    <div className="session-details">
                                         <div className="detail">
-                                            <span className="label">Завершение:</span>
+                                            <span className="label">Начало:</span>
                                             <span className="value">
-                                                {new Date(session.finished_at).toLocaleString('ru-RU')}
+                                                {new Date(session.created_at).toLocaleString('ru-RU')}
                                             </span>
                                         </div>
-                                    )}
-                                    {session.reps && (
                                         <div className="detail">
-                                            <span className="label">Повторений:</span>
-                                            <span className="value">{session.reps}</span>
+                                            <span className="label">Сложность:</span>
+                                            <span className="value">{session.difficulty}</span>
                                         </div>
-                                    )}
-                                    <div className="detail">
-                                        <span className="label">Сложность:</span>
-                                        <span className="value">{session.difficulty}</span>
                                     </div>
-                                </div>
 
-                                {!session.finished_at && activeSessionId !== session.id && (
-                                    <button
-                                        className="session-action-btn"
-                                        onClick={() => setActiveSessionId(session.id)}
-                                    >
-                                        Завершить
-                                    </button>
-                                )}
-
-                                {activeSessionId === session.id && !session.finished_at && (
                                     <div className="session-finish-form">
                                         <input
                                             type="number"
@@ -180,7 +125,7 @@ export function Sessions() {
                                             onClick={() => handleFinishSession(session.id)}
                                             disabled={loading}
                                         >
-                                            {loading ? 'Сохранение...' : 'Сохранить'}
+                                            {loading ? 'Сохранение...' : 'Завершить тренировку'}
                                         </button>
                                         <button
                                             className="session-action-btn cancel"
@@ -192,32 +137,17 @@ export function Sessions() {
                                             Отмена
                                         </button>
                                     </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-
-                    {totalPages > 1 && (
-                        <div className="pagination">
-                            <button onClick={() => setPage(1)} disabled={page === 1}>
-                                Первая
-                            </button>
-                            <button onClick={() => setPage(page - 1)} disabled={page === 1}>
-                                Предыдущая
-                            </button>
-                            <span className="page-info">
-                                Страница {page} из {totalPages}
-                            </span>
-                            <button onClick={() => setPage(page + 1)} disabled={page === totalPages}>
-                                Следующая
-                            </button>
-                            <button onClick={() => setPage(totalPages)} disabled={page === totalPages}>
-                                Последняя
-                            </button>
-                        </div>
-                    )}
-                </>
+                                </div>
+                            )
+                        }
+                        return null
+                    })}
+                </section>
             )}
+
+            <section className="sessions-info">
+                <p>История ваших тренировок доступна на вкладке "Прогресс"</p>
+            </section>
         </div>
     )
 }

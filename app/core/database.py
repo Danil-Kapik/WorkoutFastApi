@@ -16,37 +16,3 @@ async_session = async_sessionmaker(
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
     async with async_session() as session:
         yield session
-
-
-"""Схема работы сессий и транзакций:
-
-HTTP request
-   ↓
-get_session()
-   ↓
-session.begin()
-   ↓
-router
-   ↓
-service (без commit)
-   ↓
-dao
-   ↓
-возврат
-   ↓
-commit() или rollback() автоматически
-
-------------------------------------------
-
-database.py
-  └── get_session (только session + transaction)
-
-router
-  └── try / except IntegrityError → HTTP
-
-service
-  └── бизнес-логика
-
-dao
-  └── ORM
-"""

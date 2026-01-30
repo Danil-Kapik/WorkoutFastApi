@@ -30,9 +30,12 @@ export const sessionsApi = {
         )
     },
 
-    getLast: async (exerciseType: string): Promise<SessionResponse | null> => {
+    getLast: async (exerciseType?: string): Promise<SessionResponse | null> => {
         try {
-            return await apiCall(`/sessions/last?exercise_type=${encodeURIComponent(exerciseType)}`)
+            const url = exerciseType
+                ? `/sessions/last?exercise_type=${encodeURIComponent(exerciseType)}`
+                : `/sessions/last`
+            return await apiCall(url)
         } catch {
             return null
         }
