@@ -7,7 +7,7 @@ from app.routers.workout_session import router as workout_session_router
 
 app = fastapi.FastAPI()
 
-# Enable CORS for frontend (localhost:5173 in dev, configure for production)
+# Enable CORS for frontend (supports dev and docker environments)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -15,6 +15,10 @@ app.add_middleware(
         "http://localhost:3000",
         "http://127.0.0.1:5173",
         "http://127.0.0.1:3000",
+        "http://localhost",
+        "http://127.0.0.1",
+        "http://frontend",
+        "http://nginx",
     ],
     allow_credentials=True,
     allow_methods=["*"],

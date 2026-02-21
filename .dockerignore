@@ -1,0 +1,9 @@
+.git
+.gitignore
+.gitattributes
+.vscode
+.idea
+*.md
+.DS_Store
+.env.example
+docker-compose.override.yml
