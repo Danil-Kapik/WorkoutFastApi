@@ -1,5 +1,5 @@
 import { apiCall } from './client'
-import type { UserProgress, ProgressResponse } from '../types'
+import type { ProgressResponse } from '../types'
 
 export const progressApi = {
     getAll: async (): Promise<ProgressResponse[]> => {
