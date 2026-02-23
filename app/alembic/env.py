@@ -23,7 +23,7 @@ from app.core.config import settings  # noqa: E402
 config = context.config
 
 config.set_main_option(
-    "sqlalchemy.url", f"{settings.DATABASE_URL}?async_fallback=True"
+    "sqlalchemy.url", f"{settings.db.DATABASE_URL}?async_fallback=True"
 )
 
 # Interpret the config file for Python logging.

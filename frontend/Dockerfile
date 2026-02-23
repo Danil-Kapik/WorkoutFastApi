@@ -1,4 +1,4 @@
-# Frontend Dockerfile - Multi-stage build with React + Vite + Nginx
+# Frontend Dockerfile - Production-optimized with React + Vite + Nginx
 
 # Stage 1: Build
 FROM node:18-alpine AS builder
@@ -20,6 +20,9 @@ RUN npm run build
 # Stage 2: Production with Nginx
 FROM nginx:stable-alpine
 
+# Install curl for health checks (very small in alpine)
+RUN apk add --no-cache curl
+
 # Remove default nginx config
 RUN rm /etc/nginx/conf.d/default.conf
 
@@ -29,14 +32,9 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Copy built frontend from builder stage
 COPY --from=builder /frontend/dist /usr/share/nginx/html
 
-# Create non-root user for security
-RUN addgroup -g 101 -S nginx && \
-    adduser -S -D -H -u 101 -h /var/cache/nginx -s /sbin/nologin -c "Nginx web server" nginx && \
-    chown -R nginx:nginx /usr/share/nginx/html /var/cache/nginx
-
-# Health check
+# Health check using /health endpoint
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD wget --quiet --tries=1 --spider http://localhost/index.html || exit 1
+    CMD curl -f http://localhost/health || exit 1
 
 # Expose port
 EXPOSE 80
