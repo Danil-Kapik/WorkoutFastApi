@@ -131,17 +131,83 @@ alembic -c alembic.ini upgrade head
 PYTHONPATH=. python -m app.scripts.initial_data
 ```
 
-### 7. Запуск приложения
+### 7. Установка зависимостей frontend
+
+```bash
+cd frontend
+npm install
+cd ..
+```
+
+### 8. Запуск в режиме разработки
+
+#### Только backend (требует локальной PostgreSQL):
 
 ```bash
 python -m uvicorn app.main:app --reload
 ```
 
-Приложение будет доступно по адресу: `http://localhost:8000`
+Backend: `http://localhost:8000`  
+API документация: `http://localhost:8000/docs`
 
-Документация по API доступна по адресам:
-- Swagger UI: `http://localhost:8000/docs`
-- ReDoc: `http://localhost:8000/redoc`
+#### Backend и Frontend (в разных терминалах):
+
+**Терминал 1 — Backend:**
+```bash
+python -m uvicorn app.main:app --reload
+```
+
+**Терминал 2 — Frontend:**
+```bash
+cd frontend
+npm run dev
+```
+
+Frontend: `http://localhost:5173`
+
+### 9. Запуск через Docker Compose
+
+Требует Docker и Docker Compose. Создайте файл `.env.docker` в корне проекта с переменными БД:
+
+```env
+DB_HOST=db
+DB_PORT=5432
+DB_USER=postgres
+DB_PASS=postgres
+DB_NAME=fitness_db
+SECRET_KEY=your-secret-key-min-32-chars
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+```
+
+Запуск:
+```bash
+docker-compose up --build
+```
+
+Приложение:
+- Frontend: `http://localhost`
+- Backend: `http://localhost:8000`
+- API docs: `http://localhost:8000/docs`
+
+Остановка:
+```bash
+docker-compose down
+```
+
+### 10. Production сборка
+
+**Frontend:**
+```bash
+cd frontend
+npm run build
+npm run preview
+```
+
+**Backend с Gunicorn:**
+```bash
+gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app
+```
 
 ## API Endpoints
 
